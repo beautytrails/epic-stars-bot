@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>StarBuy</title>
+  <title>EpicStars</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -61,7 +61,6 @@
       cursor: pointer;
       position: relative;
       transition: color .2s;
-      letter-spacing: -.01em;
     }
     .tab-btn.active { color: var(--text); font-weight: 700; }
     .tab-btn.active::after {
@@ -174,7 +173,6 @@
       background: var(--card);
       border-radius: 18px;
       padding: 12px;
-      margin-bottom: 0;
     }
 
     .pay-row {
@@ -182,10 +180,11 @@
       gap: 10px;
       margin-bottom: 10px;
     }
+
     .pay-btn {
       flex: 1;
       background: #2a2a2c;
-      border: none;
+      border: 2px solid transparent;
       border-radius: 14px;
       padding: 15px 10px;
       display: flex;
@@ -197,7 +196,9 @@
       font-weight: 600;
       font-family: inherit;
       cursor: pointer;
+      transition: border-color .2s;
     }
+    .pay-btn.selected { border-color: #5b9cf6; }
 
     /* Rub rainbow border */
     .rub-wrap {
@@ -219,23 +220,8 @@
       font-weight: 600;
       color: var(--text);
     }
-    .rub-chevron {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      margin-left: 2px;
-    }
-    .rub-chevron::before, .rub-chevron::after {
-      content: '';
-      display: block;
-      width: 8px; height: 8px;
-      border-right: 2px solid var(--muted);
-      border-bottom: 2px solid var(--muted);
-    }
-    .rub-chevron::before { transform: rotate(-135deg); }
-    .rub-chevron::after { transform: rotate(45deg); margin-top: -2px; }
 
-    /* Sub payment row */
+    /* Sub payment row (СБП / Карта) */
     .sub-pay-row {
       display: none;
       gap: 10px;
@@ -245,7 +231,7 @@
     .sub-pay-btn {
       flex: 1;
       background: #2a2a2c;
-      border: none;
+      border: 2px solid transparent;
       border-radius: 14px;
       padding: 15px 10px;
       display: flex;
@@ -257,9 +243,12 @@
       font-weight: 500;
       font-family: inherit;
       cursor: pointer;
+      transition: border-color .2s;
     }
+    .sub-pay-btn.selected { border-color: #5b9cf6; }
 
-    .sbp-full-btn {
+    /* Оплатить кнопка */
+    .pay-main-btn {
       width: 100%;
       background: #2a2a2c;
       border: none;
@@ -270,8 +259,10 @@
       font-weight: 500;
       font-family: inherit;
       cursor: pointer;
-      letter-spacing: .01em;
+      transition: background .2s, opacity .2s;
     }
+    .pay-main-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .pay-main-btn.loading { opacity: 0.7; }
 
     /* ── MONTH PILLS ── */
     .month-pills {
@@ -294,6 +285,23 @@
     .month-pill .mo { font-size: 22px; font-weight: 700; display: block; }
     .month-pill .pr { font-size: 12px; color: var(--muted); margin-top: 4px; display: block; }
     .month-pill.active { border-color: #3a3a3c; background: #2a2a2c; }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 100px; left: 50%; transform: translateX(-50%);
+      background: #333;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 14px;
+      z-index: 999;
+      opacity: 0;
+      transition: opacity .3s;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .toast.show { opacity: 1; }
 
     /* ── FOOTER LINKS ── */
     .footer-links {
@@ -343,7 +351,6 @@
     .nav-btn.active { color: #FFD700; }
     .nav-btn svg { width: 26px; height: 26px; }
 
-    /* TON icon */
     .ton-icon {
       width: 26px; height: 26px;
       background: #0098EA;
@@ -353,9 +360,6 @@
       justify-content: center;
       flex-shrink: 0;
     }
-    .ton-icon svg { width: 16px; height: 16px; }
-
-    /* RUB icon */
     .rub-icon {
       width: 22px; height: 22px;
       border-radius: 50%;
@@ -368,8 +372,6 @@
       font-weight: 700;
       color: white;
     }
-
-    /* Card icon */
     .card-icon {
       width: 22px; height: 16px;
       border-radius: 3px;
@@ -389,13 +391,13 @@
 </head>
 <body>
 
-  <!-- BANNER (rotates) -->
-  <div class="banner" id="banner">
+  <!-- BANNER -->
+  <div class="banner">
     <div class="banner-text">
       <div class="title" id="banner-title">Надёжность</div>
       <div class="sub" id="banner-sub">5000+ отзывов говорят сами за себя :)</div>
     </div>
-    <div class="banner-duck" id="banner-duck">🦆</div>
+    <div class="banner-duck">🦆</div>
   </div>
 
   <!-- TABS -->
@@ -405,7 +407,7 @@
     <button class="tab-btn" onclick="switchTab('ton', this)">Ton</button>
   </div>
 
-  <!-- ══════ STARS PAGE ══════ -->
+  <!-- ══ STARS PAGE ══ -->
   <div id="page-stars" class="page active">
     <p class="label" style="margin-bottom:10px;">Введите <span class="blue">юзернейм</span></p>
     <div class="username-row">
@@ -424,49 +426,54 @@
     </div>
 
     <div class="pills" id="pills-stars">
-      <button class="pill active" onclick="selectStars(this,'stars',50,70)">50</button>
-      <button class="pill" onclick="selectStars(this,'stars',150,210)">150</button>
-      <button class="pill" onclick="selectStars(this,'stars',250,350)">250</button>
-      <button class="pill" onclick="selectStars(this,'stars',500,700)">500</button>
-      <button class="pill" onclick="selectStars(this,'stars',1500,2100)">1500</button>
+      <button class="pill active" onclick="selectStars(this, 50)">50</button>
+      <button class="pill" onclick="selectStars(this, 150)">150</button>
+      <button class="pill" onclick="selectStars(this, 250)">250</button>
+      <button class="pill" onclick="selectStars(this, 500)">500</button>
+      <button class="pill" onclick="selectStars(this, 1500)">1500</button>
     </div>
 
     <div class="pay-box">
       <div class="pay-row">
-        <button class="pay-btn">
+        <!-- TON -->
+        <button class="pay-btn" id="ton-btn-stars" onclick="selectPayMethod('stars','ton')">
           <div class="ton-icon">
-            <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M37.6 15.4H18.4c-1.8 0-2.8 2-1.7 3.4l9.8 15.3c.5.8 1.8.8 2.3 0l9.8-15.3c1.1-1.4.1-3.4-1.7-3.4h.7z" fill="white"/>
+            <svg viewBox="0 0 56 56" fill="none" width="16" height="16">
+              <path d="M37.6 15.4H18.4c-1.8 0-2.8 2-1.7 3.4l9.8 15.3c.5.8 1.8.8 2.3 0l9.8-15.3c1.1-1.4.1-3.4-1.7-3.4z" fill="white"/>
               <path d="M28 34.2l-4.6-7.2h9.2L28 34.2z" fill="white" opacity=".5"/>
             </svg>
           </div>
           Ton
         </button>
+        <!-- RUB -->
         <div class="rub-wrap" onclick="toggleRub('stars')">
           <div class="rub-inner">
             <div class="rub-icon">₽</div>
             Rub
-            <div class="rub-chevron"></div>
+            <span style="font-size:18px;color:var(--muted);margin-left:2px;">⌄</span>
           </div>
         </div>
       </div>
 
+      <!-- СБП / Карта -->
       <div class="sub-pay-row" id="sub-stars">
-        <button class="sub-pay-btn">
+        <button class="sub-pay-btn" id="sbp-btn-stars" onclick="selectSubPay('stars','sbp')">
           <div class="rub-icon">₽</div>
           СБП
         </button>
-        <button class="sub-pay-btn">
+        <button class="sub-pay-btn" id="card-btn-stars" onclick="selectSubPay('stars','card')">
           <div class="card-icon"></div>
           Карта
         </button>
       </div>
 
-      <button class="sbp-full-btn">Оплата через СБП</button>
+      <button class="pay-main-btn" id="main-pay-btn-stars" onclick="doPayStars()">
+        Оплатить через СБП
+      </button>
     </div>
   </div>
 
-  <!-- ══════ PREMIUM PAGE ══════ -->
+  <!-- ══ PREMIUM PAGE ══ -->
   <div id="page-premium" class="page">
     <p class="label" style="margin-bottom:10px;">Введите <span class="blue">юзернейм</span></p>
     <div class="username-row">
@@ -476,15 +483,15 @@
 
     <p class="label">Выберите количество месяцев</p>
     <div class="month-pills">
-      <button class="month-pill active" onclick="selMonth(this)">
+      <button class="month-pill active" onclick="selMonth(this, 3, 1120)">
         <span class="mo">3</span>
         <span class="pr">1 120 ₽</span>
       </button>
-      <button class="month-pill" onclick="selMonth(this)">
+      <button class="month-pill" onclick="selMonth(this, 6, 1490)">
         <span class="mo">6</span>
         <span class="pr">1 490 ₽</span>
       </button>
-      <button class="month-pill" onclick="selMonth(this)">
+      <button class="month-pill" onclick="selMonth(this, 12, 2700)">
         <span class="mo">12</span>
         <span class="pr">2 700 ₽</span>
       </button>
@@ -492,9 +499,12 @@
 
     <div class="pay-box">
       <div class="pay-row">
-        <button class="pay-btn">
+        <button class="pay-btn" onclick="selectPayMethod('premium','ton')">
           <div class="ton-icon">
-            <svg viewBox="0 0 56 56" fill="none"><path d="M37.6 15.4H18.4c-1.8 0-2.8 2-1.7 3.4l9.8 15.3c.5.8 1.8.8 2.3 0l9.8-15.3c1.1-1.4.1-3.4-1.7-3.4h.7z" fill="white"/><path d="M28 34.2l-4.6-7.2h9.2L28 34.2z" fill="white" opacity=".5"/></svg>
+            <svg viewBox="0 0 56 56" fill="none" width="16" height="16">
+              <path d="M37.6 15.4H18.4c-1.8 0-2.8 2-1.7 3.4l9.8 15.3c.5.8 1.8.8 2.3 0l9.8-15.3c1.1-1.4.1-3.4-1.7-3.4z" fill="white"/>
+              <path d="M28 34.2l-4.6-7.2h9.2L28 34.2z" fill="white" opacity=".5"/>
+            </svg>
           </div>
           Ton
         </button>
@@ -502,27 +512,29 @@
           <div class="rub-inner">
             <div class="rub-icon">₽</div>
             Rub
-            <div class="rub-chevron"></div>
+            <span style="font-size:18px;color:var(--muted);margin-left:2px;">⌄</span>
           </div>
         </div>
       </div>
 
       <div class="sub-pay-row" id="sub-premium">
-        <button class="sub-pay-btn">
+        <button class="sub-pay-btn" id="sbp-btn-premium" onclick="selectSubPay('premium','sbp')">
           <div class="rub-icon">₽</div>
           СБП
         </button>
-        <button class="sub-pay-btn">
+        <button class="sub-pay-btn" id="card-btn-premium" onclick="selectSubPay('premium','card')">
           <div class="card-icon"></div>
           Карта
         </button>
       </div>
 
-      <button class="sbp-full-btn">Оплата через СБП</button>
+      <button class="pay-main-btn" id="main-pay-btn-premium" onclick="doPayPremium()">
+        Оплатить через СБП
+      </button>
     </div>
   </div>
 
-  <!-- ══════ TON PAGE ══════ -->
+  <!-- ══ TON PAGE ══ -->
   <div id="page-ton" class="page">
     <p class="label" style="margin-bottom:10px;">Введите <span class="blue">юзернейм</span></p>
     <div class="username-row">
@@ -538,29 +550,25 @@
     <a href="https://telegra.ph/Politika-vozvrata-05-23" target="_blank">Политика возврата</a>
     <a href="https://telegra.ph/Politika-konfidencialnosti-05-23-13" target="_blank">Политика конфиденциальности</a>
   </div>
-  <div class="footer-copy">© 2025 StarBuy. Все права защищены · RU</div>
+  <div class="footer-copy">© 2026 EpicStars. Все права защищены · RU</div>
 
   <!-- BOTTOM NAV -->
   <div class="bottom-nav">
     <button class="nav-btn" id="nav-0" onclick="navClick(0)">
-      <!-- gift -->
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><rect x="5" y="12" width="14" height="9" rx="1"/>
-        <path d="M8 8c0-2 1.5-4 4-4s4 2 4 4"/>
-        <path d="M8 8c0-2-1-3.5-3-3.5s-3 1.5-3 3.5h6z"/>
-        <path d="M16 8c0-2 1-3.5 3-3.5s3 1.5 3 3.5h-6z"/>
+        <rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/>
+        <rect x="5" y="12" width="14" height="9" rx="1"/>
+        <path d="M8 8c0-2 1.5-3.5 4-3.5s4 1.5 4 3.5"/>
       </svg>
       Розыгрыши
     </button>
     <button class="nav-btn active" id="nav-1" onclick="navClick(1)">
-      <!-- yellow star filled -->
       <svg viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
+        <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17.77l-6.18 3.23 2.36-7.4L2 9.4h7.6z"/>
       </svg>
       Звёзды
     </button>
     <button class="nav-btn" id="nav-2" onclick="navClick(2)">
-      <!-- person -->
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
         <circle cx="12" cy="7" r="4"/>
@@ -569,26 +577,55 @@
     </button>
   </div>
 
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
   <script>
+    // ── CONFIG ──
+    const API_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJQdWJsaWNJZCI6IjNhMjE1Y2Q4LTQzZjEtMzdkMi1lMGZiLWZjMmRhZDk2MzA0ZCIsIlRva2VuVmVyc2lvbiI6IjEiLCJleHAiOjE4MTA5MDc2MDgsImlzcyI6Imh0dHBzOi8vYXBpLndhdGEucHJvIiwiYXVkIjoiaHR0cHM6Ly9hcGkud2F0YS5wcm8vYXBpL2gyaCJ9._wm1S0KkfA2LvwHPSPu3jl7s73TBoTL7RMj2AAk2rfc';
+    const API_BASE = 'https://dg-api.wata.pro/api';
+
+    // ── TELEGRAM INIT ──
+    let tgUser = null;
     if (typeof Telegram !== 'undefined') {
       Telegram.WebApp.ready();
       Telegram.WebApp.expand();
+      tgUser = Telegram.WebApp.initDataUnsafe?.user || null;
     }
 
-    /* ── BANNER ROTATION ── */
+    // Авто-юзернейм из Telegram
+    window.addEventListener('DOMContentLoaded', () => {
+      if (tgUser) {
+        const uname = tgUser.username ? '@' + tgUser.username : (tgUser.first_name || '');
+        ['stars','premium','ton'].forEach(tab => {
+          const inp = document.getElementById('un-' + tab);
+          if (inp && uname) {
+            inp.value = uname;
+            updateAvatar(tab);
+          }
+        });
+      }
+    });
+
+    // ── STATE ──
+    const state = {
+      stars: { count: 50, price: 70, method: 'sbp' },   // sbp | card | ton
+      premium: { months: 3, amount: 1120, method: 'sbp' }
+    };
+
+    // ── BANNER ROTATION ──
     const banners = [
-      { title: 'Надёжность', sub: '5000+ отзывов говорят сами за себя :)', duck: '🦆' },
-      { title: 'Выгода', sub: 'Можно оплатить в Ton и сэкономить до 30%!', duck: '🦆' },
+      { title: 'Надёжность', sub: '5000+ отзывов говорят сами за себя :)' },
+      { title: 'Выгода', sub: 'Можно оплатить в Ton и сэкономить до 30%!' },
     ];
-    let bannerIdx = 0;
+    let bi = 0;
     setInterval(() => {
-      bannerIdx = (bannerIdx + 1) % banners.length;
-      const b = banners[bannerIdx];
-      document.getElementById('banner-title').textContent = b.title;
-      document.getElementById('banner-sub').textContent = b.sub;
+      bi = (bi + 1) % banners.length;
+      document.getElementById('banner-title').textContent = banners[bi].title;
+      document.getElementById('banner-sub').textContent = banners[bi].sub;
     }, 4000);
 
-    /* ── TABS ── */
+    // ── TABS ──
     function switchTab(name, btn) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -596,40 +633,181 @@
       btn.classList.add('active');
     }
 
-    /* ── AVATAR (initials fallback) ── */
+    // ── AVATAR ──
     const COLORS = ['#5b9cf6','#ff6b6b','#6bcb77','#ffd93d','#c77dff','#ff9f43'];
     function updateAvatar(tab) {
       const input = document.getElementById('un-' + tab);
       const av = document.getElementById('av-' + tab);
       let val = input.value.replace(/^@/, '').trim();
       if (!val) { av.textContent = '?'; av.style.background = '#3a3a3c'; return; }
-      const letter = val[0].toUpperCase();
-      const color = COLORS[val.charCodeAt(0) % COLORS.length];
-      av.textContent = letter;
-      av.style.background = color;
+      av.textContent = val[0].toUpperCase();
+      av.style.background = COLORS[val.charCodeAt(0) % COLORS.length];
     }
 
-    /* ── STARS SELECTION ── */
-    function selectStars(btn, tab, count, price) {
-      document.querySelectorAll('#pills-' + tab + ' .pill').forEach(b => b.classList.remove('active'));
+    // ── STARS SELECTION ──
+    // Цены за пакеты (руб.)
+    const STAR_PRICES = { 50: 70, 150: 210, 250: 350, 500: 700, 1500: 2100 };
+
+    function selectStars(btn, count) {
+      document.querySelectorAll('#pills-stars .pill').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      document.getElementById('sc-' + tab).textContent = count;
-      document.getElementById('sp-' + tab).textContent = price;
+      state.stars.count = count;
+      state.stars.price = STAR_PRICES[count] || count * 1.4;
+      document.getElementById('sc-stars').textContent = count;
+      document.getElementById('sp-stars').textContent = state.stars.price;
     }
 
-    /* ── MONTH SELECTION ── */
-    function selMonth(btn) {
+    // ── MONTH SELECTION ──
+    function selMonth(btn, months, amount) {
       document.querySelectorAll('.month-pill').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
+      state.premium.months = months;
+      state.premium.amount = amount;
     }
 
-    /* ── RUB TOGGLE ── */
+    // ── RUB TOGGLE ──
     function toggleRub(tab) {
       const sub = document.getElementById('sub-' + tab);
       sub.classList.toggle('visible');
+      // Если открылся — по умолчанию СБП
+      if (sub.classList.contains('visible')) {
+        selectSubPay(tab, state[tab]?.method === 'ton' ? 'sbp' : (state[tab]?.method || 'sbp'));
+      }
     }
 
-    /* ── BOTTOM NAV ── */
+    // ── PAY METHOD SELECTION ──
+    function selectPayMethod(tab, method) {
+      state[tab].method = method;
+      updatePayBtn(tab);
+    }
+
+    function selectSubPay(tab, method) {
+      state[tab].method = method;
+      // highlight selected
+      const sbpBtn = document.getElementById('sbp-btn-' + tab);
+      const cardBtn = document.getElementById('card-btn-' + tab);
+      if (sbpBtn) sbpBtn.classList.toggle('selected', method === 'sbp');
+      if (cardBtn) cardBtn.classList.toggle('selected', method === 'card');
+      updatePayBtn(tab);
+    }
+
+    function updatePayBtn(tab) {
+      const btn = document.getElementById('main-pay-btn-' + tab);
+      if (!btn) return;
+      const method = state[tab].method;
+      if (method === 'sbp') btn.textContent = 'Оплатить через СБП';
+      else if (method === 'card') btn.textContent = 'Оплатить картой';
+      else if (method === 'ton') btn.textContent = 'Оплатить через TON';
+    }
+
+    // ── TOAST ──
+    function showToast(msg, duration = 3000) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), duration);
+    }
+
+    // ── GENERATE ORDER ID ──
+    function genOrderId() {
+      return 'ES-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7).toUpperCase();
+    }
+
+    // ── GET USERNAME ──
+    function getUsername(tab) {
+      const val = document.getElementById('un-' + tab).value.replace(/^@/, '').trim();
+      return val;
+    }
+
+    // ── WATA API: CREATE STARS ORDER ──
+    async function createStarsOrder(username, count, amount) {
+      const orderId = genOrderId();
+      const resp = await fetch(API_BASE + '/stars', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + API_TOKEN
+        },
+        body: JSON.stringify({
+          username: username,
+          count: count,
+          amount: parseFloat(amount.toFixed(2)),
+          description: 'Покупка ' + count + ' звезд для @' + username,
+          orderId: orderId,
+          telegramId: tgUser?.id || null
+        })
+      });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err?.error?.message || 'Ошибка создания заказа');
+      }
+      return await resp.json();
+    }
+
+    // ── DO PAY STARS ──
+    async function doPayStars() {
+      const username = getUsername('stars');
+      if (!username) { showToast('Введите юзернейм'); return; }
+
+      const btn = document.getElementById('main-pay-btn-stars');
+      btn.disabled = true;
+      btn.textContent = 'Создаём заказ...';
+
+      try {
+        // Сначала получаем актуальную цену с API
+        const priceResp = await fetch(API_BASE + '/stars/price?Username=' + encodeURIComponent(username), {
+          headers: { 'Authorization': 'Bearer ' + API_TOKEN }
+        });
+
+        let amount = state.stars.price; // fallback на наши цены
+
+        if (priceResp.ok) {
+          const priceData = await priceResp.json();
+          // minPrice * count — минимальная сумма
+          const minAmount = priceData.minPrice * state.stars.count;
+          // Берём наши цены, но не ниже минимума API
+          amount = Math.max(state.stars.price, minAmount);
+        } else {
+          const errData = await priceResp.json().catch(() => ({}));
+          // STR_1002 = пользователь не найден
+          const code = errData?.error?.code;
+          if (code === 'STR_1002') {
+            showToast('Пользователь @' + username + ' не найден в Telegram');
+            btn.disabled = false;
+            updatePayBtn('stars');
+            return;
+          }
+        }
+
+        const order = await createStarsOrder(username, state.stars.count, amount);
+        // Редирект на платежную ссылку
+        if (order.paymentLink) {
+          if (typeof Telegram !== 'undefined') {
+            Telegram.WebApp.openLink(order.paymentLink);
+          } else {
+            window.open(order.paymentLink, '_blank');
+          }
+        } else {
+          showToast('Не удалось получить ссылку на оплату');
+        }
+      } catch (e) {
+        showToast(e.message || 'Ошибка оплаты');
+      } finally {
+        btn.disabled = false;
+        updatePayBtn('stars');
+      }
+    }
+
+    // ── DO PAY PREMIUM ──
+    async function doPayPremium() {
+      const username = getUsername('premium');
+      if (!username) { showToast('Введите юзернейм'); return; }
+      // Premium через WATA пока не реализован в API для TG Premium —
+      // показываем уведомление (можно добавить свой эндпоинт)
+      showToast('Premium: скоро будет доступно');
+    }
+
+    // ── BOTTOM NAV ──
     function navClick(idx) {
       document.querySelectorAll('.nav-btn').forEach((b, i) => {
         b.classList.toggle('active', i === idx);
