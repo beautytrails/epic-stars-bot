@@ -27,13 +27,10 @@
     <h1 id="greeting" class="text-2xl font-bold">Привет, emotional swaggage!</h1>
   </div>
 
-  <!-- Надёжность -->
-  <div class="mx-5 mt-4 glass rounded-3xl p-5 flex items-center gap-4">
-    <div>
-      <div class="text-xl font-semibold">Надёжность</div>
-      <div class="text-sm text-gray-400">5000+ отзывов говорят сами за себя :)</div>
-    </div>
-    <div class="ml-auto text-7xl">🦆</div>
+  <!-- Надёжность (без утки) -->
+  <div class="mx-5 mt-4 glass rounded-3xl p-5">
+    <div class="text-xl font-semibold">Надёжность</div>
+    <div class="text-sm text-gray-400">5000+ отзывов говорят сами за себя :)</div>
   </div>
 
   <!-- Табы -->
@@ -53,20 +50,20 @@
 
     <div class="text-sm text-gray-400 mt-8 mb-2">Введите количество звезд</div>
 
-    <!-- Большой стеклянный блок как на скрине -->
+    <!-- Большой стеклянный блок -->
     <div class="big-glass rounded-3xl p-5 flex justify-between items-center text-4xl">
-      <div>50 <span class="text-yellow-400">★</span></div>
+      <div>50 <span class="text-yellow-400">⭐</span></div>
       <div class="text-3xl text-gray-400">⇄</div>
       <div class="text-yellow-400">70₽</div>
     </div>
 
-    <!-- Маленькие круглые кнопки -->
+    <!-- Маленькие кнопки (шрифт уменьшен) -->
     <div class="flex gap-2 mt-6 overflow-x-auto pb-2">
-      <button onclick="selectStars(50)" class="glass px-6 py-3 rounded-3xl text-sm whitespace-nowrap">50</button>
-      <button onclick="selectStars(150)" class="glass px-6 py-3 rounded-3xl text-sm whitespace-nowrap">150</button>
-      <button onclick="selectStars(250)" class="glass px-6 py-3 rounded-3xl text-sm whitespace-nowrap">250</button>
-      <button onclick="selectStars(500)" class="glass px-6 py-3 rounded-3xl text-sm whitespace-nowrap">500</button>
-      <button onclick="selectStars(1500)" class="glass px-6 py-3 rounded-3xl text-sm whitespace-nowrap">1500</button>
+      <button onclick="selectStars(50)" class="glass px-5 py-3 rounded-3xl text-base">50</button>
+      <button onclick="selectStars(150)" class="glass px-5 py-3 rounded-3xl text-base">150</button>
+      <button onclick="selectStars(250)" class="glass px-5 py-3 rounded-3xl text-base">250</button>
+      <button onclick="selectStars(500)" class="glass px-5 py-3 rounded-3xl text-base">500</button>
+      <button onclick="selectStars(1500)" class="glass px-5 py-3 rounded-3xl text-base">1500</button>
     </div>
 
     <!-- Оплата -->
@@ -84,9 +81,9 @@
     </button>
   </div>
 
-  <!-- Остальные табы (Premium и Ton) оставляем как были -->
-  <div id="content-1" class="p-5 hidden">...</div>
-  <div id="content-2" class="p-5 hidden">...</div>
+  <!-- PREMIUM и TON (пока оставляем как было) -->
+  <div id="content-1" class="p-5 hidden">Premium Tab</div>
+  <div id="content-2" class="p-5 hidden">Ton Tab</div>
 
   <!-- Нижняя навигация -->
   <div class="fixed bottom-0 left-0 right-0 glass py-3 border-t border-gray-800">
