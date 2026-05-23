@@ -12,20 +12,22 @@
     .glass { background: rgba(255,255,255,0.08); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.1); }
     .neon { box-shadow: 0 0 20px rgba(234, 179, 8, 0.6); }
     .tab-active { border-bottom: 3px solid #eab308; color: #eab308; }
+    .bottom-btn { transition: all 0.2s; }
+    .bottom-btn:active { transform: scale(0.95); }
   </style>
 </head>
 <body class="min-h-screen pb-24">
 
   <!-- Приветствие -->
-  <div class="px-5 pt-8 pb-4">
-    <h1 class="text-2xl font-bold text-center">Привет, certified genome carrier &gt;_!</h1>
+  <div class="px-5 pt-8 pb-4 text-center">
+    <h1 id="greeting" class="text-2xl font-bold"></h1>
   </div>
 
-  <!-- Розыгрыши -->
+  <!-- Надёжность -->
   <div class="mx-5 glass rounded-3xl p-5 flex items-center gap-4">
     <div>
-      <div class="text-xl font-semibold">Розыгрыши</div>
-      <div class="text-sm text-gray-400">Ежедневные розыгрыши в нашем канале!</div>
+      <div class="text-xl font-semibold">Надёжность</div>
+      <div class="text-sm text-gray-400">5000+ отзывов говорят сами за себя :)</div>
     </div>
     <div class="ml-auto text-7xl">🦆</div>
   </div>
@@ -41,19 +43,24 @@
   <div id="content-0" class="p-5">
     <div class="text-sm text-gray-400 mb-2">Введите юзернейм</div>
     <div class="glass rounded-3xl px-5 py-4 flex items-center gap-3">
-      <input id="username" type="text" value="@triplesixxf" class="bg-transparent outline-none flex-1 text-lg">
-      <div class="text-4xl">👤</div>
+      <input id="username" type="text" class="bg-transparent outline-none flex-1 text-lg" placeholder="@username">
+      <div id="user-avatar" class="w-10 h-10 bg-gray-700 rounded-2xl flex items-center justify-center text-3xl overflow-hidden"></div>
     </div>
 
     <div class="text-center text-sm text-gray-400 mt-8">Введите количество звезд</div>
 
-    <div class="grid grid-cols-3 gap-3 mt-6">
-      <button onclick="selectStars(50)" class="glass rounded-3xl py-6 text-center text-2xl">50 ⭐</button>
-      <button onclick="selectStars(100)" class="glass rounded-3xl py-6 text-center text-2xl">100 ⭐</button>
-      <button onclick="selectStars(500)" class="glass rounded-3xl py-6 text-center text-2xl">500 ⭐</button>
-      <button onclick="selectStars(1000)" class="glass rounded-3xl py-6 text-center text-2xl">1000 ⭐</button>
-      <button onclick="selectStars(5000)" class="glass rounded-3xl py-6 text-center text-2xl">5000 ⭐</button>
-      <button onclick="selectStars(3000)" class="glass rounded-3xl py-6 text-center text-2xl">3000 ⭐</button>
+    <div class="glass rounded-3xl p-6 mt-4 text-center">
+      <div id="selected-price" class="flex justify-center items-center gap-8 text-5xl font-semibold">
+        50 <span class="text-yellow-400">★</span> <span class="text-yellow-400">70₽</span>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-5 gap-3 mt-8">
+      <button onclick="selectStars(50)" class="glass rounded-3xl py-5 text-lg">50</button>
+      <button onclick="selectStars(150)" class="glass rounded-3xl py-5 text-lg">150</button>
+      <button onclick="selectStars(250)" class="glass rounded-3xl py-5 text-lg">250</button>
+      <button onclick="selectStars(500)" class="glass rounded-3xl py-5 text-lg">500</button>
+      <button onclick="selectStars(1500)" class="glass rounded-3xl py-5 text-lg">1500</button>
     </div>
 
     <button onclick="buyStars()" class="w-full mt-10 py-6 bg-yellow-400 hover:bg-yellow-300 text-black font-bold text-2xl rounded-3xl neon">
@@ -65,23 +72,23 @@
   <div id="content-1" class="p-5 hidden">
     <div class="text-sm text-gray-400 mb-2">Введите юзернейм</div>
     <div class="glass rounded-3xl px-5 py-4 flex items-center gap-3">
-      <input id="premium-username" type="text" value="@triplesixxf" class="bg-transparent outline-none flex-1 text-lg">
-      <div class="text-4xl">👤</div>
+      <input id="premium-username" type="text" class="bg-transparent outline-none flex-1 text-lg" placeholder="@username">
+      <div id="premium-avatar" class="w-10 h-10 bg-gray-700 rounded-2xl flex items-center justify-center text-3xl overflow-hidden"></div>
     </div>
 
     <div class="text-center text-sm text-gray-400 mt-8">Выберите количество месяцев</div>
     <div class="grid grid-cols-3 gap-4 mt-6">
       <button onclick="selectPremium(3)" class="glass rounded-3xl py-8 text-center">
         <div class="text-4xl">3</div>
-        <div class="text-yellow-400 text-xl">1 120 ₽</div>
+        <div class="text-yellow-400">1 120 ₽</div>
       </button>
       <button onclick="selectPremium(6)" class="glass rounded-3xl py-8 text-center">
         <div class="text-4xl">6</div>
-        <div class="text-yellow-400 text-xl">1 490 ₽</div>
+        <div class="text-yellow-400">1 490 ₽</div>
       </button>
       <button onclick="selectPremium(12)" class="glass rounded-3xl py-8 text-center">
         <div class="text-4xl">12</div>
-        <div class="text-yellow-400 text-xl">2 700 ₽</div>
+        <div class="text-yellow-400">2 700 ₽</div>
       </button>
     </div>
   </div>
@@ -91,18 +98,54 @@
     Скоро здесь будет покупка TON
   </div>
 
-  <!-- Нижняя навигация -->
+  <!-- Нижняя навигация (стеклянные кнопки) -->
   <div class="fixed bottom-0 left-0 right-0 glass border-t border-gray-800 py-3">
     <div class="flex justify-around text-xs">
-      <div class="text-center"><i class="fa-solid fa-gift text-3xl"></i><br>Розыгрыши</div>
-      <div onclick="switchTab(0)" class="text-center text-yellow-400"><i class="fa-solid fa-star text-3xl"></i><br>Звёзды</div>
-      <div class="text-center"><i class="fa-solid fa-user text-3xl"></i><br>Профиль</div>
+      <button onclick="goToLink('https://t.me/yourchannel')" class="bottom-btn text-center flex flex-col items-center">
+        <i class="fa-solid fa-gift text-3xl"></i>
+        <span>Розыгрыши</span>
+      </button>
+      <button onclick="switchTab(0)" class="bottom-btn text-center text-yellow-400 flex flex-col items-center">
+        <i class="fa-solid fa-star text-3xl"></i>
+        <span>Звёзды</span>
+      </button>
+      <button onclick="goToLink('https://t.me/yourprofile')" class="bottom-btn text-center flex flex-col items-center">
+        <i class="fa-solid fa-user text-3xl"></i>
+        <span>Профиль</span>
+      </button>
     </div>
   </div>
 
+  <!-- Footer -->
+  <div class="fixed bottom-16 left-0 right-0 text-center text-xs text-gray-400 px-5">
+    <div class="flex justify-center gap-6">
+      <a href="https://telegra.ph/Pravila-ispolzovaniya-EpicStars-05-23" target="_blank" class="hover:text-white">Правила использования</a>
+      <a href="https://telegra.ph/Politika-vozvrata-05-23" target="_blank" class="hover:text-white">Политика возврата</a>
+      <a href="https://telegra.ph/Politika-konfidencialnosti-05-23-13" target="_blank" class="hover:text-white">Политика конфиденциальности</a>
+    </div>
+    <div class="mt-3">© 2025 StarBuy. Все права защищены · RU</div>
+  </div>
+
   <script>
-    Telegram.WebApp.ready();
-    Telegram.WebApp.expand();
+    const tg = Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+
+    // Динамическое приветствие
+    const user = tg.initDataUnsafe?.user || {};
+    const name = user.first_name || user.username || "emotional swaggage";
+    document.getElementById('greeting').innerHTML = `Привет, ${name}!`;
+
+    // Аватарка текущего пользователя
+    const avatarContainer = document.getElementById('user-avatar');
+    const premiumAvatar = document.getElementById('premium-avatar');
+    if (user.photo_url) {
+      avatarContainer.innerHTML = `<img src="${user.photo_url}" class="w-full h-full object-cover">`;
+      premiumAvatar.innerHTML = `<img src="${user.photo_url}" class="w-full h-full object-cover">`;
+    } else {
+      avatarContainer.innerHTML = '👤';
+      premiumAvatar.innerHTML = '👤';
+    }
 
     function switchTab(n) {
       document.querySelectorAll('[id^="content-"]').forEach(el => el.classList.add('hidden'));
@@ -112,21 +155,33 @@
       document.getElementById('tab-' + n).classList.add('tab-active');
     }
 
+    let selectedStars = 50;
     function selectStars(count) {
-      Telegram.WebApp.showAlert(`Выбрано ${count} звёзд`);
-    }
-
-    function selectPremium(months) {
-      Telegram.WebApp.showAlert(`Выбран Premium на ${months} месяцев`);
+      selectedStars = count;
+      const price = Math.round(count * 1.4); // примерная цена
+      document.getElementById('selected-price').innerHTML = `
+        ${count} <span class="text-yellow-400">★</span> 
+        <span class="text-yellow-400">${price}₽</span>
+      `;
     }
 
     function buyStars() {
       const username = document.getElementById('username').value || '@user';
-      Telegram.WebApp.showAlert(`Заказ на звёзды для ${username} создан!`);
+      tg.showAlert(`✅ Заказ на ${selectedStars} ⭐ для ${username} создан!`);
     }
 
-    // Автоматически открываем вкладку Stars
+    function selectPremium(months) {
+      const prices = {3: 1120, 6: 1490, 12: 2700};
+      tg.showAlert(`✅ Выбран Telegram Premium на ${months} месяцев ( ${prices[months]} ₽ )`);
+    }
+
+    function goToLink(url) {
+      tg.openLink(url);
+    }
+
+    // Запуск на Stars
     switchTab(0);
+    selectStars(50);
   </script>
 </body>
 </html>
